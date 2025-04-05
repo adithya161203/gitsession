@@ -1,0 +1,32 @@
+> Print the pdf report through the modal using the server action
+
+start_date = record.x_studio_start_date
+end_date = record.x_studio_end_date
+journal_ids = record.x_studio_journals_4
+
+domain = [
+    ('line_ids', '!=', False)
+]
+
+if start_date and end_date:
+   domain += [('date', '>=', start_date), ('date', '<=', end_date)]
+elif start_date and not end_date:
+   domain.append(('date', '>=', start_date))
+elif end_date and not start_date:
+   domain.append(('date', '<=', end_date))
+
+if journal_ids:
+   domain.append(('journal_id', 'in', journal_ids.ids))
+   
+report_action = env.ref('studio_customization.journal_entry_report_65f08784-569d-4f1a-a654-ebdeecc32f77') # replace with your pdf template xml_id
+journal_entries = env['account.move'].search(domain)
+action = {
+          'type': 'ir.actions.report',
+          'report_name': report_action.report_name, 
+          'report_type': 'qweb-pdf', 
+          'context': {
+          'active_ids': [entry.id for entry in journal_entries],
+          },
+        }
+
+
